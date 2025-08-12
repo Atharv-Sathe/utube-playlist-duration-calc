@@ -134,9 +134,44 @@ const createTimeNode = (timeStr) => {
   console.log("Overlay added to DOM with duration:", timeStr);
 };
 
+// Wait until all playlist video durations are loaded before calculating
+function waitForPlaylistTimes() {
+  return new Promise((resolve) => {
+    const checkTimes = () => {
+      const times = document.querySelectorAll(
+        "ytd-playlist-video-renderer .badge-shape-wiz__text"
+      );
+      if (times.length > 0) {
+        // If "ytd-continuation-item-renderer" (loading placeholder) does not exist,
+        // it means all videos are loaded
+        const lastVideo = document.querySelector("ytd-continuation-item-renderer");
+        if (!lastVideo) {
+          observer.disconnect(); // stop observing once loaded
+          resolve();
+        }
+      }
+    };
+
+    // Observe DOM changes to detect when video durations are loaded
+    const observer = new MutationObserver(() => {
+      checkTimes();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Initial check
+    checkTimes();
+  });
+}
+
 // Main function to display playlist duration
-function displayDuration() {
-  console.log("YouTube Playlist Duration Calculator loaded");
+async function wrapper() {
+
+  await waitForPlaylistTimes(); // Wait until all video durations are available
+
   const timeStr = displayTotalTime(getVideoTimes());
   if (timeStr) {
     createTimeNode(timeStr);
@@ -145,13 +180,7 @@ function displayDuration() {
   }
 }
 
-async function wrapper() {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  displayDuration();
-}
-wrapper(); // initial execution
-
-// URL change detection
+// URL change detection to re-run when navigating between playlists
 let currentUrl = window.location.href;
 const checkUrlChange = () => {
   if (window.location.href !== currentUrl) {
@@ -161,6 +190,9 @@ const checkUrlChange = () => {
     }
   }
 };
-
-// Check for url changes after every 2 seconds
 setInterval(checkUrlChange, 2000);
+
+// Initial execution if the current page is already a playlist
+if (currentUrl.includes("youtube.com/playlist")) {
+  wrapper();
+}
