@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Playlist Duration Calculator",
+  "version": "1.0",
+  "description": "Calculate and display the total duration of YouTube playlists",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/playlist*", "*://youtube.com/playlist*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
