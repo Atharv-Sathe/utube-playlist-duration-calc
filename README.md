@@ -28,3 +28,7 @@ Navigate to any YouTube playlist (e.g., `https://www.youtube.com/playlist?list=.
 
 ## Images
 ![Sample ScreenShot](image.png)
+
+## Issues 
+
+1. Duration Calculation on Complete Playlist Load
